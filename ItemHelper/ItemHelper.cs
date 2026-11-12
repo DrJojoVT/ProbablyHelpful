@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace ProbablyHelpful
 {
@@ -23,6 +24,11 @@ namespace ProbablyHelpful
             }
             _modId = modId;
             Tag = new ProbablyHelpfulTagCollection(this);
+            // Containers
+            if (this is IProbablyHelpfulContainer container)
+            {
+                Defer((item) => container.CustomizeContainer(item));
+            }
         }
 
         internal ProbablyHelpfulItem Defer(Action<GameItem> step)
@@ -35,8 +41,17 @@ namespace ProbablyHelpful
         {
             GameItem item = ItemDirectory.CreateEmptyItem(_itemId);
             item.SetSpriteAndShapeFromMod(_modId, _itemId);
-            foreach (Action<GameItem> step in _buildSteps)
-                step(item);
+            int count = _buildSteps.Count;
+            try 
+            {
+                for (int i = 0; i < _buildSteps.Count; i++)
+                    _buildSteps[i](item);
+            }
+            finally
+            {
+                if (_buildSteps.Count > count)
+                    _buildSteps.RemoveRange(count, _buildSteps.Count - count);
+            }
             return item;
         }
 
@@ -55,6 +70,15 @@ namespace ProbablyHelpful
             return Defer(item => item.shortDescription = desc);
         }
 
+        public ProbablyHelpfulItem SetLocalizedNameAndDescription()
+        {
+            return Defer(item =>
+            {
+                item.name = ModHelper.GetLocalized(_modId, _itemId + "_name");
+                item.shortDescription = ModHelper.GetLocalized(_modId, _itemId + "_description");
+            });
+        }
+
         public ProbablyHelpfulItem SetValue(int value)
         {
             return Defer(item => item.SetValue(value));
@@ -63,6 +87,22 @@ namespace ProbablyHelpful
         public ProbablyHelpfulItem SetSolidShape(int width, int height)
         {
             return Defer(item => item.SetShape(new GridShapeBuilder().SetDataFill(width, height)));
+        }
+
+        public void SetItemActivateOnTarget(string itemId, Func<GameItem, GameItem, bool> canExecute, Action<GameItem, GameItem> execute)
+        {
+            SetItemActivateOnTarget((target, dragged) => dragged.identifier == itemId, canExecute, execute);
+        }
+
+        public void SetItemActivateOnTarget(Func<GameItem, GameItem, bool> isValidTarget, Func<GameItem, GameItem, bool> canExecute, Action<GameItem, GameItem> execute)
+        {
+            Defer(item =>
+            {
+                item.mayThisTargetItemFunc += isValidTarget;
+                item.canThisTargetItemFunc += (dragged, target) =>
+                    isValidTarget(dragged, target) && canExecute(dragged, target);
+                item.onThisTargetItemFunc += execute;
+            });
         }
     }
 }

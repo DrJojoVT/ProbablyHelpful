@@ -4,30 +4,42 @@ namespace ProbablyHelpful
 {
     public class ItemCollection
     {
-        private readonly List<ProbablyHelpfulItem> _items = new List<ProbablyHelpfulItem>();
-        public ItemCollection SetItems(params ProbablyHelpfulItem[] items)
+        public string ModId;
+        public List<ProbablyHelpfulItem> Items;
+        public ItemCollection(string modId)
         {
-            var collection = new ItemCollection();
-            if (items != null)
-                collection._items.AddRange(items);
-            ModHook.OnModItemDirectoryInit += collection.RegisterItems;
-            return collection;
+            ModId = modId;
+            Items = new List<ProbablyHelpfulItem>();
+        }
+
+        public ItemCollection AddItem(ProbablyHelpfulItem itemHelper)
+        {
+            Items.Add(itemHelper);
+            return this;
+        }
+
+        public ItemCollection AddItems(params ProbablyHelpfulItem[] items)
+        {
+            foreach (ProbablyHelpfulItem itemHelper in items)
+            {
+                AddItem(itemHelper);
+            }
+            return this;
         }
 
         public void RegisterItems(ModItemDirectory directory)
         {
-            foreach (ProbablyHelpfulItem item in _items)
+            foreach (ProbablyHelpfulItem itemHelper in Items)
             {
-                ProbablyHelpfulItem captured = item;
-                if (!directory.Add(captured.ItemId, () =>
+                if (!directory.Add(itemHelper.ItemId, () =>
                 {
-                    GameItem created = captured.Build();
-                    LoadedMod mod = ModLoader.Mods.Find(m => m.Manifest.ID == captured.ModId);
+                    GameItem created = itemHelper.Build();
+                    LoadedMod mod = ModLoader.Mods.Find(m => m.Manifest.ID == itemHelper.ModId);
                     string modName = mod?.Manifest.Name;
-                    ModHelper.SetSource(created, captured.ModId, string.IsNullOrEmpty(modName) ? captured.ModId : modName);
+                    ModHelper.SetSource(created, itemHelper.ModId, string.IsNullOrEmpty(modName) ? itemHelper.ModId : modName);
                     return created;
                 }))
-                    UnityEngine.Debug.LogWarning("[ProbablyHelpful] Failed to register item " + captured.ItemId + " (duplicate id?)");
+                    UnityEngine.Debug.LogWarning("[ProbablyHelpful] Failed to register item " + itemHelper.ItemId + " (duplicate id?)");
             }
         }
     }

@@ -34,5 +34,49 @@ namespace ProbablyHelpful
             }
             return vectors;
         }
+    
+        public static bool MoveItemTo(GameItem item, GameInventory inventory)
+        {
+            SlotMarker slotMarker = inventory.TryFindOneValidInventorySlot(item);
+            if (slotMarker == null || !slotMarker.IsValid() || slotMarker.AcceptUnchecked() < 1) return false;
+            inventory.TryInventorySlot(item, slotMarker.itemGridShape);
+            if (inventory.TryInventorySlot(item, slotMarker.itemGridShape) != null) return true;
+            return false;
+        }
+
+        public static void MoveContents(GameInventory source, GameInventory destination)
+        {
+            if (source == null || destination == null || source == destination) return;
+            foreach (GameItem content in new List<GameItem>(source.childItems))
+            {
+                GraphUtils.TryAcceptAll(destination, content);
+            }
+        }
+
+        public static void MoveContents(GameItem source, GameInventory destination)
+        {
+            GameInventory inventory1 = GraphUtils.FindChildType<GameInventory>(source);
+            MoveContents(inventory1, destination);
+        }
+
+        public static void MoveContents(GameItem source, GameItem destination)
+        {
+            GameInventory inventory1 = GraphUtils.FindChildType<GameInventory>(source);
+            GameInventory inventory2 = GraphUtils.FindChildType<GameInventory>(destination);
+            MoveContents(inventory1, inventory2);
+        }
+
+        public static bool TryCreateItem(string itemId, GameInventory inventory, out GameItem item)
+        {
+            item = ModHelper.SpawnItem(itemId);
+            if (inventory == null) {
+                item.Destroy();
+                return false;
+            }
+            if (item == null) return false;
+            if (MoveItemTo(item, inventory)) return true;
+            item.Destroy();
+            return false;
+        }
     }
 }

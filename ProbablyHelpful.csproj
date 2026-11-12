@@ -42,6 +42,7 @@
       <ModTextures Include="$(ProjectDir)Textures/**/*" />
       <ModLoot Include="$(ProjectDir)LootTables/**/*" />
       <ModBooks Include="$(ProjectDir)Books/**/*" />
+      <ModLocalization Include="$(ProjectDir)Localization/**/*" />
     </ItemGroup>
     <Copy SourceFiles="@(ModTextures)"
           DestinationFiles="@(ModTextures->'$(ModDir)Textures/%(RecursiveDir)%(Filename)%(Extension)')" />
@@ -49,6 +50,8 @@
           DestinationFiles="@(ModLoot->'$(ModDir)LootTables/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(ModBooks)"
           DestinationFiles="@(ModBooks->'$(ModDir)Books/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(ModLocalization)"
+          DestinationFiles="@(ModLocalization->'$(ModDir)Localization/%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
 </Project>
