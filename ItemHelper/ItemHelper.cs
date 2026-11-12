@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using UnityEngine;
 
 namespace ProbablyHelpful
 {
     public partial class ProbablyHelpfulItem
     {
-        private GameItem _item;
-        private string _itemId;
+        public static bool IsEnabled = false;
+        private readonly List<Action<GameItem>> _buildSteps = new List<Action<GameItem>>();
+        public string _itemId;
         private string _modId;
+        public ProbablyHelpfulTagCollection Tag;
+
+        public string ItemId => _itemId;
+        public string ModId => _modId;
 
         public ProbablyHelpfulItem(string modId, string itemId)
         {
@@ -21,27 +22,47 @@ namespace ProbablyHelpful
                 _itemId = modId + "." + itemId;
             }
             _modId = modId;
-            _item = ItemDirectory.CreateEmptyItem(_itemId);
+            Tag = new ProbablyHelpfulTagCollection(this);
+        }
+
+        internal ProbablyHelpfulItem Defer(Action<GameItem> step)
+        {
+            _buildSteps.Add(step);
+            return this;
+        }
+
+        public GameItem Build()
+        {
+            GameItem item = ItemDirectory.CreateEmptyItem(_itemId);
+            item.SetSpriteAndShapeFromMod(_modId, _itemId);
+            foreach (Action<GameItem> step in _buildSteps)
+                step(item);
+            return item;
+        }
+
+        public ProbablyHelpfulItem SetSprite(string spriteKey)
+        {
+            return Defer(item => item.SetSpriteAndShapeFromMod(_modId, spriteKey));
         }
 
         public ProbablyHelpfulItem SetName(string name)
         {
-            _item.name = name;
-            return this;
+            return Defer(item => item.name = name);
         }
 
         public ProbablyHelpfulItem SetDescription(string desc)
         {
-            _item.shortDescription = desc;
-            return this;
+            return Defer(item => item.shortDescription = desc);
         }
 
         public ProbablyHelpfulItem SetValue(int value)
         {
-            _item.SetValue(value);
-            return this;
+            return Defer(item => item.SetValue(value));
         }
 
-        
+        public ProbablyHelpfulItem SetSolidShape(int width, int height)
+        {
+            return Defer(item => item.SetShape(new GridShapeBuilder().SetDataFill(width, height)));
+        }
     }
 }

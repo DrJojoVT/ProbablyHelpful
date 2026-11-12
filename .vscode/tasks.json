@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-direct",
+            "type": "shell",
+            "command": "dotnet build /home/joseph/Documents/Code/ProbablyStolenMods/ProbablyHelpful/ProbablyHelpful.csproj /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}

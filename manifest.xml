@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Manifest>
+  <ID>probably_helpful</ID>
+  <Name>Probably Helpful</Name>
+  <Author>DrJosephJorgen</Author>
+  <ModVersion>1.0</ModVersion>
+  <Description></Description>
+  <GameVersions>
+    <Version>0.46</Version>
+  </GameVersions>
+  <Prerequisites />
+  <Assemblies>
+    <Assembly>ProbablyHelpful.dll</Assembly>
+  </Assemblies>
+  <Capabilities />
+</Manifest>

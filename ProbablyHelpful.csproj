@@ -6,7 +6,8 @@
     <RootNamespace>ProbablyHelpful</RootNamespace>
     <!-- This is the Linux Path. Update if Windows User -->
     <GameDir>$(HOME)/.local/share/Steam/steamapps/common/Probably Stolen/</GameDir>
-    <ManagedDir>$(GameDir)/Probably Stolen_Data/Managed</ManagedDir>
+    <ManagedDir>$(GameDir)/Probably Stolen_Data/Managed/</ManagedDir>
+    <ModDir>$(GameDir)/Mods/$(RootNamespace)/</ModDir>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
@@ -30,5 +31,24 @@
       <Private>false</Private>
     </Reference>
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModDir)" />
+    <Copy SourceFiles="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' == '$(RootNamespace)'"
+          DestinationFolder="$(ModDir)" />
+    <Copy SourceFiles="$(ProjectDir)manifest.xml" DestinationFolder="$(ModDir)" />
+    <Copy SourceFiles="$(ProjectDir)preview.png" DestinationFolder="$(ModDir)" Condition="Exists('$(ProjectDir)preview.png')" />
+    <ItemGroup>
+      <ModTextures Include="$(ProjectDir)Textures/**/*" />
+      <ModLoot Include="$(ProjectDir)LootTables/**/*" />
+      <ModBooks Include="$(ProjectDir)Books/**/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ModTextures)"
+          DestinationFiles="@(ModTextures->'$(ModDir)Textures/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(ModLoot)"
+          DestinationFiles="@(ModLoot->'$(ModDir)LootTables/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(ModBooks)"
+          DestinationFiles="@(ModBooks->'$(ModDir)Books/%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
 
 </Project>
