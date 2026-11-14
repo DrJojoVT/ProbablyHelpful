@@ -2,10 +2,12 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using System.Collections;
+using System.Reflection;
 
 namespace ProbablyHelpful
 {
-    public class ProbablyHelpfulHelper
+    public partial class ProbablyHelpfulHelper
     {
         public static List<ItemSpriteModifier> GetItemSpriteModifiersFromInventory(Func<GameItem, int, ItemSpriteModifier> callback, GameInventory inventory, int startIndex = 0, int maxItems = int.MaxValue)
         {
@@ -35,6 +37,16 @@ namespace ProbablyHelpful
             return vectors;
         }
     
+        public static List<Sprite> GetModSprites(string modId,string prefix, params GameItem[] items)
+        {
+            var sprites = new List<Sprite>();
+            foreach (var item in items)
+            {
+                var sprite = CustomUIManager.Instance.GetModSprite(modId, prefix + item.identifier);
+                if (sprite != null) sprites.Add(sprite);
+            }
+            return sprites;
+        }
         public static bool MoveItemTo(GameItem item, GameInventory inventory)
         {
             SlotMarker slotMarker = inventory.TryFindOneValidInventorySlot(item);
@@ -64,6 +76,56 @@ namespace ProbablyHelpful
             GameInventory inventory1 = GraphUtils.FindChildType<GameInventory>(source);
             GameInventory inventory2 = GraphUtils.FindChildType<GameInventory>(destination);
             MoveContents(inventory1, inventory2);
+        }
+
+        public static IEnumerable<GameInventory> GetRootInventories()
+        {
+            EmporiumEntry entry = EmporiumEntry.Instance;
+            if (entry == null) yield break;
+            GameInventory[] roots =
+            {
+                entry.invElement,
+                entry.frontInvinvElement,
+                entry.backInvinvElement,
+                entry.backInvinvElementCounter,
+                entry.showcaseElement,
+                entry.hiddenElement,
+                entry.soldElement,
+                entry.hirelingInv,
+                entry.trashInvElement,
+                entry.trashcanInvElement,
+                entry.docInvElement,
+                entry.drainInvElement,
+                entry.faucetElement,
+                entry.cassettePlayerElement,
+                entry.vendingMachineElement,
+                entry.vendingFountainElement,
+                entry.swapBufferElement,
+                entry.bazarLeftinvElement,
+                entry.responseInventory,
+                entry.responseInventoryClosable,
+                entry.afterhourInventory,
+                entry.afterhourPocketSlotInvLeft,
+                entry.afterhourPocketSlotInvBackpack,
+                entry.afterhourPocketSlotInvRight,
+            };
+            foreach (GameInventory root in roots)
+                if (root != null) yield return root;
+        }
+
+        public static List<GameItem> FindAllItems(Func<GameItem, bool> filter = null)
+        {
+            var found = new HashSet<GameItem>();
+            foreach (GameInventory root in GetRootInventories())
+                foreach (GameItem item in GraphUtils.FindAllChildrenType<GameItem>(root, filter))
+                    found.Add(item);
+            return found.ToList();
+        }
+
+        public static void ForEachItem(Action<GameItem> action, Func<GameItem, bool> filter = null)
+        {
+            foreach (GameItem item in FindAllItems(filter))
+                action(item);
         }
 
         public static bool TryCreateItem(string itemId, GameInventory inventory, out GameItem item)

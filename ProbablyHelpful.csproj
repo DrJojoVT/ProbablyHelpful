@@ -8,6 +8,7 @@
     <GameDir>$(HOME)/.local/share/Steam/steamapps/common/Probably Stolen/</GameDir>
     <ManagedDir>$(GameDir)/Probably Stolen_Data/Managed/</ManagedDir>
     <ModDir>$(GameDir)/Mods/$(RootNamespace)/</ModDir>
+    <ReleaseDir>$(ProjectDir)bin/release/</ReleaseDir>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
@@ -34,10 +35,17 @@
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModDir)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ReleaseDir)" />
     <Copy SourceFiles="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' == '$(RootNamespace)'"
           DestinationFolder="$(ModDir)" />
+    <Copy SourceFiles="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' == '$(RootNamespace)'"
+          DestinationFolder="$(ReleaseDir)" />
     <Copy SourceFiles="$(ProjectDir)manifest.xml" DestinationFolder="$(ModDir)" />
-    <Copy SourceFiles="$(ProjectDir)preview.png" DestinationFolder="$(ModDir)" Condition="Exists('$(ProjectDir)preview.png')" />
+    <Copy SourceFiles="$(ProjectDir)manifest.xml" DestinationFolder="$(ReleaseDir)" />
+    <Copy SourceFiles="$(ProjectDir)preview.png" DestinationFolder="$(ModDir)" 
+      Condition="Exists('$(ProjectDir)preview.png')" />
+    <Copy SourceFiles="$(ProjectDir)preview.png" DestinationFolder="$(ReleaseDir)" 
+      Condition="Exists('$(ProjectDir)preview.png')" />
     <ItemGroup>
       <ModTextures Include="$(ProjectDir)Textures/**/*" />
       <ModLoot Include="$(ProjectDir)LootTables/**/*" />
@@ -46,12 +54,20 @@
     </ItemGroup>
     <Copy SourceFiles="@(ModTextures)"
           DestinationFiles="@(ModTextures->'$(ModDir)Textures/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(ModTextures)"
+          DestinationFiles="@(ModTextures->'$(ReleaseDir)Textures/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(ModLoot)"
           DestinationFiles="@(ModLoot->'$(ModDir)LootTables/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(ModLoot)"
+          DestinationFiles="@(ModLoot->'$(ReleaseDir)LootTables/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(ModBooks)"
           DestinationFiles="@(ModBooks->'$(ModDir)Books/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(ModBooks)"
+          DestinationFiles="@(ModBooks->'$(ReleaseDir)Books/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(ModLocalization)"
           DestinationFiles="@(ModLocalization->'$(ModDir)Localization/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(ModLocalization)"
+          DestinationFiles="@(ModLocalization->'$(ReleaseDir)Localization/%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
 </Project>

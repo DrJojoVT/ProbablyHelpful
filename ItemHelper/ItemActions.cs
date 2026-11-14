@@ -30,7 +30,6 @@ namespace ProbablyHelpful
             Func<GameItem, GameInventory, SlotMarker, bool> inner = item.mayActivateSlotItemFunc;
             if (inner == null)
                 return;
-            ProbablyHelpful.Logger.Log("Pilk RestrictActivationToContextMenu");
             item.mayActivateSlotItemFunc = (activated, inventory, slot) =>
                 IsContextMenuTargeting(activated) &&
                 inner.InvokeAllReduce(activated, inventory, slot, InvokeFuncExtensions.BoolReduceOR);

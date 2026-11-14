@@ -10,11 +10,9 @@ namespace ProbablyHelpful
         }
         public void OnEnable()
         {
-            ProbablyHelpfulItem.IsEnabled = true;
         }
         public void OnDisable()
         {
-            ProbablyHelpfulItem.IsEnabled = false;
         }
     }
 }

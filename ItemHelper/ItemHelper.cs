@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace ProbablyHelpful
 {
     public partial class ProbablyHelpfulItem
     {
-        public static bool IsEnabled = false;
         private readonly List<Action<GameItem>> _buildSteps = new List<Action<GameItem>>();
         public string _itemId;
         private string _modId;
@@ -24,7 +24,6 @@ namespace ProbablyHelpful
             }
             _modId = modId;
             Tag = new ProbablyHelpfulTagCollection(this);
-            // Containers
             if (this is IProbablyHelpfulContainer container)
             {
                 Defer((item) => container.CustomizeContainer(item));
@@ -52,6 +51,7 @@ namespace ProbablyHelpful
                 if (_buildSteps.Count > count)
                     _buildSteps.RemoveRange(count, _buildSteps.Count - count);
             }
+            PostBuild(item); 
             return item;
         }
 
@@ -103,6 +103,24 @@ namespace ProbablyHelpful
                     isValidTarget(dragged, target) && canExecute(dragged, target);
                 item.onThisTargetItemFunc += execute;
             });
+        }
+
+        public void PostBuild(GameItem item)
+        {
+            Revalidate(item);
+            ProbablyHelpfulHelper.FindAllItems(i2 => i2.identifier == _itemId)
+            .ForEach(i2 => Revalidate(i2));
+        }
+
+        public void Revalidate(GameItem item)
+        {
+            item.ValidateShapeState();
+        }
+
+        public static void ClearTags(GameItem item)
+        {
+            foreach (string tag in item.state.dict.Keys.ToList())
+            item.DisableTag(tag, skipValidate: true);
         }
     }
 }
