@@ -9,20 +9,17 @@ using UnityEngine;
 namespace ProbablyHelpful
 {
     // Extend Methods
-    public partial class ProbablyHelpfulItem
+    public abstract partial class ProbablyHelpfulItem
     {
     
-        public ProbablyHelpfulItem CanSelfActivate(Func<GameItem, GameInventory, SlotMarker, bool> canActivate)
+        public void CanSelfActivate(Func<GameItem, GameInventory, SlotMarker, bool> canActivate)
         {
-            return Defer(item =>
+            GameItem.mayActivateSlotItemFunc += canActivate;
+            GameItem.canActivateSlotItemFunc += canActivate;
+            if (this is IProbablyHelpfulContainer)
             {
-                item.mayActivateSlotItemFunc += canActivate;
-                item.canActivateSlotItemFunc += canActivate;
-                if (this is IProbablyHelpfulContainer)
-                {
-                    RestrictActivationToContextMenu(item);
-                }
-            });
+                RestrictActivationToContextMenu(GameItem);
+            }
         }
 
         public void RestrictActivationToContextMenu(GameItem item)
@@ -35,27 +32,24 @@ namespace ProbablyHelpful
                 inner.InvokeAllReduce(activated, inventory, slot, InvokeFuncExtensions.BoolReduceOR);
         }
 
-        public ProbablyHelpfulItem CanSelfActivate(bool canActivate)
+        public void CanSelfActivate(bool canActivate)
         {
-            return CanSelfActivate((_,_,_) => canActivate);
+            CanSelfActivate((_,_,_) => canActivate);
         }
 
-        public ProbablyHelpfulItem OnSelfActivate(Action<GameItem> activate)
+        public void OnSelfActivate(Action<GameItem> activate)
         {
-            return OnSelfActivate((item, _, _) => activate(item));
+            OnSelfActivate((item, _, _) => activate(item));
         }
 
-        public ProbablyHelpfulItem OnSelfActivate(Action<GameItem, GameInventory> activate)
+        public void OnSelfActivate(Action<GameItem, GameInventory> activate)
         {
-            return OnSelfActivate((item, inventory, _) => activate(item, inventory));
+            OnSelfActivate((item, inventory, _) => activate(item, inventory));
         }
 
-        public ProbablyHelpfulItem OnSelfActivate(Action<GameItem, GameInventory, SlotMarker> activate)
+        public void OnSelfActivate(Action<GameItem, GameInventory, SlotMarker> activate)
         {
-            return Defer(item =>
-            {
-                item.onActivateSlotItemFunc += activate;
-            });
+            GameItem.onActivateSlotItemFunc += activate;
         }
 
         private static readonly FieldInfo ContextMenuCurrentItemField =
@@ -66,6 +60,18 @@ namespace ProbablyHelpful
             ItemContextHandler handler = ItemContextHandler.current;
             if (handler == null || ContextMenuCurrentItemField == null) return false;
             return ReferenceEquals(ContextMenuCurrentItemField.GetValue(handler), item);
+        }
+
+        public void SetItemActivateOnTarget(string itemId, Func<GameItem, GameItem, bool> canExecute, Action<GameItem, GameItem> execute)
+        {
+            SetItemActivateOnTarget((target, dragged) => dragged.identifier == itemId, canExecute, execute);
+        }
+        public void SetItemActivateOnTarget(Func<GameItem, GameItem, bool> isValidTarget, Func<GameItem, GameItem, bool> canExecute, Action<GameItem, GameItem> execute)
+        {
+            GameItem.mayThisTargetItemFunc += isValidTarget;
+            GameItem.canThisTargetItemFunc += (dragged, target) =>
+                isValidTarget(dragged, target) && canExecute(dragged, target);
+            GameItem.onThisTargetItemFunc += execute;
         }
     }
 }

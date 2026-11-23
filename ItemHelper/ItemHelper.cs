@@ -5,118 +5,84 @@ using UnityEngine;
 
 namespace ProbablyHelpful
 {
-    public partial class ProbablyHelpfulItem
+    public abstract partial class ProbablyHelpfulItem
     {
         private readonly List<Action<GameItem>> _buildSteps = new List<Action<GameItem>>();
-        public string _itemId;
-        private string _modId;
         public ProbablyHelpfulTagCollection Tag;
+        public abstract string ItemId { get; }
+        public abstract string ModId { get; }
+        private GameItem _gameItem;
+        public GameItem GameItem => _gameItem;
+        public CustomInspectionUI inspectionUISmall;
+        public CustomInspectionUI inspectionUILarge;
 
-        public string ItemId => _itemId;
-        public string ModId => _modId;
-
-        public ProbablyHelpfulItem(string modId, string itemId)
+        public ProbablyHelpfulItem()
         {
-            if (itemId.Contains(".")) {
-                _itemId = itemId;
-            } else {
-                _itemId = modId + "." + itemId;
-            }
-            _modId = modId;
             Tag = new ProbablyHelpfulTagCollection(this);
-            if (this is IProbablyHelpfulContainer container)
-            {
-                Defer((item) => container.CustomizeContainer(item));
-            }
         }
-
-        internal ProbablyHelpfulItem Defer(Action<GameItem> step)
-        {
-            _buildSteps.Add(step);
-            return this;
-        }
+        public virtual void Customize() { }
 
         public GameItem Build()
         {
-            GameItem item = ItemDirectory.CreateEmptyItem(_itemId);
-            item.SetSpriteAndShapeFromMod(_modId, _itemId);
-            int count = _buildSteps.Count;
-            try 
+            GameItem item = _gameItem = ItemDirectory.CreateEmptyItem(ItemId);
+            item.SetSpriteAndShapeFromMod(ModId, ItemId);
+            Customize();
+            if (this is IProbablyHelpfulContainer container)
             {
-                for (int i = 0; i < _buildSteps.Count; i++)
-                    _buildSteps[i](item);
+                container.CustomizeContainer();
             }
-            finally
+            if (this is IProbablyHelpfulInspectionItem inspectionItem)
             {
-                if (_buildSteps.Count > count)
-                    _buildSteps.RemoveRange(count, _buildSteps.Count - count);
+                inspectionItem.InitializeInspection();
             }
-            PostBuild(item); 
             return item;
         }
 
-        public ProbablyHelpfulItem SetSprite(string spriteKey)
+        public void SetSprite(string spriteKey)
         {
-            return Defer(item => item.SetSpriteAndShapeFromMod(_modId, spriteKey));
+            GameItem.SetSpriteAndShapeFromMod(ModId, spriteKey);
         }
 
-        public ProbablyHelpfulItem SetName(string name)
+        public void SetName(string name)
         {
-            return Defer(item => item.name = name);
+            GameItem.name = name;
         }
 
-        public ProbablyHelpfulItem SetDescription(string desc)
+        public void SetDescription(string desc)
         {
-            return Defer(item => item.shortDescription = desc);
+            GameItem.shortDescription = desc;
         }
 
-        public ProbablyHelpfulItem SetLocalizedNameAndDescription()
+        public void SetLocalizedNameAndDescription()
         {
-            return Defer(item =>
+            GameItem.name = ModHelper.GetLocalized(ModId, ItemId + "_name");
+            GameItem.shortDescription = ModHelper.GetLocalized(ModId, ItemId + "_description");
+        }
+
+        public void SetValue(int value)
+        {
+            GameItem.SetValue(value);
+        }
+
+        public void SetShape(GridShapeBuilder shape)
+        {
+            GameItem.SetShape(shape);
+            if (GameItem is GameItemElement element)
             {
-                item.name = ModHelper.GetLocalized(_modId, _itemId + "_name");
-                item.shortDescription = ModHelper.GetLocalized(_modId, _itemId + "_description");
-            });
+                element.background.image.alphaHitTestMinimumThreshold = 0f;
+                element.fakeBackground.image.alphaHitTestMinimumThreshold = 0f;
+            }
         }
 
-        public ProbablyHelpfulItem SetValue(int value)
+        public void SetSolidShape(int width, int height)
         {
-            return Defer(item => item.SetValue(value));
-        }
-
-        public ProbablyHelpfulItem SetSolidShape(int width, int height)
-        {
-            return Defer(item => item.SetShape(new GridShapeBuilder().SetDataFill(width, height)));
-        }
-
-        public void SetItemActivateOnTarget(string itemId, Func<GameItem, GameItem, bool> canExecute, Action<GameItem, GameItem> execute)
-        {
-            SetItemActivateOnTarget((target, dragged) => dragged.identifier == itemId, canExecute, execute);
-        }
-
-        public void SetItemActivateOnTarget(Func<GameItem, GameItem, bool> isValidTarget, Func<GameItem, GameItem, bool> canExecute, Action<GameItem, GameItem> execute)
-        {
-            Defer(item =>
-            {
-                item.mayThisTargetItemFunc += isValidTarget;
-                item.canThisTargetItemFunc += (dragged, target) =>
-                    isValidTarget(dragged, target) && canExecute(dragged, target);
-                item.onThisTargetItemFunc += execute;
-            });
-        }
-
-        public void PostBuild(GameItem item)
-        {
-            Revalidate(item);
-            ProbablyHelpfulHelper.FindAllItems(i2 => i2.identifier == _itemId)
-            .ForEach(i2 => Revalidate(i2));
+            SetShape(new GridShapeBuilder().SetDataFill(width, height));
         }
 
         public void Revalidate(GameItem item)
         {
             item.ValidateShapeState();
         }
-
         public static void ClearTags(GameItem item)
         {
             foreach (string tag in item.state.dict.Keys.ToList())

@@ -14,272 +14,267 @@ namespace ProbablyHelpful
         {
             _helper = helper;
         }
-        public ProbablyHelpfulItem Add(string tag)
+        public void Add(string tag)
         {
-            _helper.Defer(item =>
-            {
-                item.ModifyTag(tag, state => state.SetBool(true), true);
-                item.EnableTag(tag);
-            });
-            return _helper;
+            _helper.GameItem.ModifyTag(tag, state => state.SetBool(true), true);
+            _helper.GameItem.EnableTag(tag);
         }
 
-        public ProbablyHelpfulItem Set(string tag)
+        public void Set(string tag)
         {
             Add(tag);
-            _helper.Defer(item => item.SetGameItemType(tag));
-            return _helper;
+            _helper.GameItem.SetGameItemType(tag);
         }
 
-        public ProbablyHelpfulItem AddMedical()
-        {
-            return Set(TypeHelper.MEDICAL);
-        }
-
-        public ProbablyHelpfulItem AddMedicalTool()
+        public void AddMedical()
         {
             Set(TypeHelper.MEDICAL);
-            return Add(TypeHelper.MEDICAL_TOOL);
         }
 
-        public ProbablyHelpfulItem AddMedicalOrgan()
+        public void AddMedicalTool()
         {
             Set(TypeHelper.MEDICAL);
-            return Add(TypeHelper.ORGAN);
+            Add(TypeHelper.MEDICAL_TOOL);
         }
 
-        public ProbablyHelpfulItem AddLuxury()
+        public void AddMedicalOrgan()
         {
-            return Set(TypeHelper.LUXURY_ITEM);
+            Set(TypeHelper.MEDICAL);
+            Add(TypeHelper.ORGAN);
         }
 
-        public ProbablyHelpfulItem AddArt()
+        public void AddLuxury()
         {
-            return Set(TypeHelper.ART);
+            Set(TypeHelper.LUXURY_ITEM);
         }
 
-        public ProbablyHelpfulItem AddTool()
+        public void AddArt()
         {
-            return Set(TypeHelper.TOOL);
+            Set(TypeHelper.ART);
         }
 
-        public ProbablyHelpfulItem AddMachine()
+        public void AddTool()
         {
-            return Set(TypeHelper.MACHINE);
+            Set(TypeHelper.TOOL);
         }
 
-        public ProbablyHelpfulItem AddMaterial()
+        public void AddMachine()
         {
-            return Set(TypeHelper.MATERIAL);
+            Set(TypeHelper.MACHINE);
         }
 
-        public ProbablyHelpfulItem AddBasicMaterial()
+        public void AddMaterial()
+        {
+            Set(TypeHelper.MATERIAL);
+        }
+
+        public void AddBasicMaterial()
         {
             AddMaterial();
-            return Add(TypeHelper.BASIC_MATERIAL);
+            Add(TypeHelper.BASIC_MATERIAL);
         }
 
-        public ProbablyHelpfulItem AddRefinedMaterial()
+        public void AddRefinedMaterial()
         {
             AddMaterial();
-            return Add(TypeHelper.REFINED_MATERIAL);
+            Add(TypeHelper.REFINED_MATERIAL);
         }
 
-        public ProbablyHelpfulItem AddJunk()
+        public void AddJunk()
         {
-            return Set(TypeHelper.JUNK);
+            Set(TypeHelper.JUNK);
         }
 
-        public ProbablyHelpfulItem AddEnergyCell()
+        public void AddEnergyCell()
         {
-            return Set(TypeHelper.ENERGY_CELL);
+            Set(TypeHelper.ENERGY_CELL);
         }
 
-        public ProbablyHelpfulItem AddModule()
+        public void AddModule()
         {
-            return Set(TypeHelper.MODULE);
+            Set(TypeHelper.MODULE);
         }
 
-        public ProbablyHelpfulItem AddNode()
+        public void AddNode()
         {
-            return Set(TypeHelper.NODE);
+            Set(TypeHelper.NODE);
         }
 
-        public ProbablyHelpfulItem AddHydroponicModule()
-        {
-            AddModule();
-            return Add(TypeHelper.HYDROPONIC_MODULE);
-        }
-
-        public ProbablyHelpfulItem AddAlarmModule()
+        public void AddHydroponicModule()
         {
             AddModule();
-            return Add(TypeHelper.ALARM_MODULE);
+            Add(TypeHelper.HYDROPONIC_MODULE);
         }
 
-        public ProbablyHelpfulItem AddPrinterModule()
+        public void AddAlarmModule()
         {
             AddModule();
-            return Add(TypeHelper.PRINTER_MODULE);
+            Add(TypeHelper.ALARM_MODULE);
         }
 
-        public ProbablyHelpfulItem AddEvaporatorModule()
+        public void AddPrinterModule()
         {
             AddModule();
-            return Add(TypeHelper.EVAPORATOR_MODULE);
+            Add(TypeHelper.PRINTER_MODULE);
         }
 
-        public ProbablyHelpfulItem AddFilter()
+        public void AddEvaporatorModule()
         {
-            return Set(TypeHelper.FILTER);
+            AddModule();
+            Add(TypeHelper.EVAPORATOR_MODULE);
         }
 
-        public ProbablyHelpfulItem AddWeapon()
+        public void AddFilter()
         {
-            return Set(TypeHelper.WEAPON);
+            Set(TypeHelper.FILTER);
         }
 
-        public ProbablyHelpfulItem AddMeleeWeapon()
+        public void AddWeapon()
+        {
+            Set(TypeHelper.WEAPON);
+        }
+
+        public void AddMeleeWeapon()
         {
             AddWeapon();
-            return Set(TypeHelper.MELEE_WEAPON);
+            Set(TypeHelper.MELEE_WEAPON);
         }
 
-        public ProbablyHelpfulItem AddFirearm()
+        public void AddFirearm()
         {
             AddWeapon();
-            return Set(TypeHelper.FIREARM);
+            Set(TypeHelper.FIREARM);
         }
 
-        public ProbablyHelpfulItem AddModdible()
+        public void AddModdible()
         {
-            return Set(TypeHelper.MODDABLE);
+            Set(TypeHelper.MODDABLE);
         }
 
-        public ProbablyHelpfulItem AddGunMod()
+        public void AddGunMod()
         {
-            return Set(TypeHelper.GUN_MOD);
+            Set(TypeHelper.GUN_MOD);
         }
 
-        public ProbablyHelpfulItem AddAmmunition()
+        public void AddAmmunition()
         {
-            return Set(TypeHelper.AMMUNITION);
+            Set(TypeHelper.AMMUNITION);
         }
 
-        public ProbablyHelpfulItem AddMunition()
+        public void AddMunition()
         {
-            return Set(TypeHelper.MUNITION);
+            Set(TypeHelper.MUNITION);
         }
 
-        public ProbablyHelpfulItem AddArmor()
+        public void AddArmor()
         {
-            return Set(TypeHelper.ARMOR);
+            Set(TypeHelper.ARMOR);
         }
         
-        public ProbablyHelpfulItem AddRestricted1()
+        public void AddRestricted1()
         {
-            return Set(TypeHelper.RESTRICTED_1);
+            Set(TypeHelper.RESTRICTED_1);
         }
         
-        public ProbablyHelpfulItem AddRestricted2()
+        public void AddRestricted2()
         {
-            return Set(TypeHelper.RESTRICTED_2);
+            Set(TypeHelper.RESTRICTED_2);
         }
         
-        public ProbablyHelpfulItem AddRestricted3()
+        public void AddRestricted3()
         {
-            return Set(TypeHelper.RESTRICTED_3);
+            Set(TypeHelper.RESTRICTED_3);
         }
         
-        public ProbablyHelpfulItem AddWater()
+        public void AddWater()
         {
-            return Set(TypeHelper.WATER);
+            Set(TypeHelper.WATER);
         }
         
-        public ProbablyHelpfulItem AddWaterRation()
+        public void AddWaterRation()
         {
-            return Set(TypeHelper.WATER_RATION);
+            Set(TypeHelper.WATER_RATION);
         }
         
-        public ProbablyHelpfulItem AddWaterPurificationSupply()
+        public void AddWaterPurificationSupply()
         {
-            return Set(TypeHelper.WATER_PURIFICATION_SUPPLY);
+            Set(TypeHelper.WATER_PURIFICATION_SUPPLY);
         }
         
-        public ProbablyHelpfulItem AddFood()
+        public void AddFood()
         {
-            return Set(TypeHelper.FOOD);
+            Set(TypeHelper.FOOD);
         }
         
-        public ProbablyHelpfulItem AddFreshFood()
+        public void AddFreshFood()
         {
             AddFood();
-            return Add(TypeHelper.FRESH_FOOD);
+            Add(TypeHelper.FRESH_FOOD);
         }
         
-        public ProbablyHelpfulItem AddProcessedFood()
+        public void AddProcessedFood()
         {
             AddFood();
-            return Set(TypeHelper.FRESH_FOOD);
+            Set(TypeHelper.FRESH_FOOD);
         }
         
-        public ProbablyHelpfulItem AddTreat()
+        public void AddTreat()
         {
             AddFood();
-            return Set(TypeHelper.TREAT);
+            Set(TypeHelper.TREAT);
         }
         
-        public ProbablyHelpfulItem AddBrevage()
+        public void AddBrevage()
         {
             AddFood();
-            return Set(TypeHelper.BREVAGE);
+            Set(TypeHelper.BREVAGE);
         }
         
-        public ProbablyHelpfulItem AddFarmingSupplies()
+        public void AddFarmingSupplies()
         {
-            return Set(TypeHelper.FARMING_SUPPLIES);
+            Set(TypeHelper.FARMING_SUPPLIES);
         }
         
-        public ProbablyHelpfulItem AddSeed()
+        public void AddSeed()
         {
-            return Set(TypeHelper.SEED);
+            Set(TypeHelper.SEED);
         }
         
-        public ProbablyHelpfulItem AddModifiedSeed()
+        public void AddModifiedSeed()
         {
             AddSeed();
-            return Set(TypeHelper.MODIFIED_SEED);
+            Set(TypeHelper.MODIFIED_SEED);
         }
         
-        public ProbablyHelpfulItem AddSubstance()
+        public void AddSubstance()
         {
-            return Set(TypeHelper.SUBSTANCE);
+            Set(TypeHelper.SUBSTANCE);
         }
         
-        public ProbablyHelpfulItem AddNarcotic()
+        public void AddNarcotic()
         {
             AddMedical();
-            return Set(TypeHelper.NARCOTIC);
+            Set(TypeHelper.NARCOTIC);
         }
         
-        public ProbablyHelpfulItem AddAlcohol()
+        public void AddAlcohol()
         {
-            return Set(TypeHelper.ALCOHOL);
+            Set(TypeHelper.ALCOHOL);
         }
         
-        public ProbablyHelpfulItem AddPoison()
+        public void AddPoison()
         {
-            return Set(TypeHelper.POISON);
+            Set(TypeHelper.POISON);
         }
         
-        public ProbablyHelpfulItem AddDocument()
+        public void AddDocument()
         {
-            return Set(TypeHelper.DOCUMENT);
+            Set(TypeHelper.DOCUMENT);
         }
 
-        public ProbablyHelpfulItem HiddenToInspection()
+        public void HiddenToInspection()
         {
-            return Add(ContrabandHelper.ITEM_HIDDEN_TAG);
+            Add(ContrabandHelper.ITEM_HIDDEN_TAG);
         }
     }
 }

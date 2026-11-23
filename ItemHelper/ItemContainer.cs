@@ -12,36 +12,51 @@ namespace ProbablyHelpful
         private static readonly ConditionalWeakTable<IProbablyHelpfulContainer, List<string>> _allowedTags = new();
         List<string> AllowedIds => _allowedIds.GetOrCreateValue(this);
         List<string> AllowedTags => _allowedTags.GetOrCreateValue(this);
-        void CustomizeContainer(GameItem item) { }
-    }
-
-    public static class ProbablyHelpfulContainerExtensions
-    {
-        public static GameInventory CreateContainer<T>(this T containerItem, GameItem item, int inventoryWidth, int inventoryHeight, bool allowAllItems = false, bool containerTags = true)
-            where T : ProbablyHelpfulItem, IProbablyHelpfulContainer
+        void CustomizeContainer() { }
+        public GameInventory CreateContainer(int inventoryWidth, int inventoryHeight, bool allowAllItems = false)
         {
+            if (this is not ProbablyHelpfulItem itemHelper) return default;
+            GameItem item = itemHelper.GameItem;
             var (window, inventory) = DirectoryUtils.CreateInventoryWindow(inventoryWidth, inventoryHeight, true);
             item.SetContentWindow(window);
             if (allowAllItems)
                 ContainerHelper.InitContainerItem(inventory, item);
             else
-                ContainerHelper.InitContainerItem(inventory, item, containerItem.AllowedTags, containerItem.AllowedIds);
+                ContainerHelper.InitContainerItem(inventory, item, AllowedTags, AllowedIds);
 	        
             item.EnableTag(ContainerHelper.CONTAINER_TAG);
             item.EnableTag(ContainerHelper.CONTAINER_TOOLTIP_TAG);
             return inventory;
         }
 
-        public static GameInventory[] CreateMultiContainerVertical<T>(this T containerItem, GameItem item, params 
-            (int width, int height, List<string> allowedTags, List<string> allowedIds)[] sections) 
-            where T : ProbablyHelpfulItem, IProbablyHelpfulContainer
+        public GameInventory[] CreateMultiContainer(params (int width, int height)[] sections)
         {
+            if (this is not ProbablyHelpfulItem itemHelper) return default;
+            GameItem item = itemHelper.GameItem;
             var inventories = sections.Select(s => new GameGridInventory(s.width, s.height).SetMachineryStyle()).ToArray();
 
             var window = MachineHelper.CreateMachineryWindow(canMove: true,
-                MachineHelper.Panel(null, MachineryStack.Vertical(inventories))); //, role: "wallet"
+                MachineHelper.Panel(null, MachineryStack.Horizontal(inventories)));
             item.SetContentWindow(window);
-            
+
+            for (int i = 0; i < sections.Length; i++)
+            {
+                ContainerHelper.InitContainerItem(inventories[i], item);
+            }
+            item.EnableTag(ContainerHelper.CONTAINER_TAG);
+            return inventories;
+        }
+
+        public GameInventory[] CreateMultiContainer(params (int width, int height, List<string> allowedTags, List<string> allowedIds)[] sections)
+        {
+            if (this is not ProbablyHelpfulItem itemHelper) return default;
+            GameItem item = itemHelper.GameItem;
+            var inventories = sections.Select(s => new GameGridInventory(s.width, s.height).SetMachineryStyle()).ToArray();
+
+            var window = MachineHelper.CreateMachineryWindow(canMove: true,
+                MachineHelper.Panel(null, MachineryStack.Horizontal(inventories)));
+            item.SetContentWindow(window);
+
             for (int i = 0; i < sections.Length; i++)
             {
                 ContainerHelper.InitContainerItem(inventories[i], item, sections[i].allowedTags, sections[i].allowedIds);
@@ -50,77 +65,118 @@ namespace ProbablyHelpful
             return inventories;
         }
 
-        public static void ContainerOpenSound<T>(this T containerItem, GameItem item, string soundId)
-            where T : ProbablyHelpfulItem, IProbablyHelpfulContainer
+        public GameInventory[] CreateMultiContainerVertical(params (int width, int height)[] sections)
         {
+            if (this is not ProbablyHelpfulItem itemHelper) return default;
+            GameItem item = itemHelper.GameItem;
+            var inventories = sections.Select(s => new GameGridInventory(s.width, s.height).SetMachineryStyle()).ToArray();
+
+            var window = MachineHelper.CreateMachineryWindow(canMove: true,
+                MachineHelper.Panel(null, MachineryStack.Vertical(inventories)));
+            item.SetContentWindow(window);
+
+            for (int i = 0; i < sections.Length; i++)
+            {
+                ContainerHelper.InitContainerItem(inventories[i], item);
+            }
+            item.EnableTag(ContainerHelper.CONTAINER_TAG);
+            return inventories;
+        }
+
+        public GameInventory[] CreateMultiContainerVertical(params (int width, int height, List<string> allowedTags, List<string> allowedIds)[] sections)
+        {
+            if (this is not ProbablyHelpfulItem itemHelper) return default;
+            GameItem item = itemHelper.GameItem;
+            var inventories = sections.Select(s => new GameGridInventory(s.width, s.height).SetMachineryStyle()).ToArray();
+
+            var window = MachineHelper.CreateMachineryWindow(canMove: true,
+                MachineHelper.Panel(null, MachineryStack.Vertical(inventories)));
+            item.SetContentWindow(window);
+
+            for (int i = 0; i < sections.Length; i++)
+            {
+                ContainerHelper.InitContainerItem(inventories[i], item, sections[i].allowedTags, sections[i].allowedIds);
+            }
+            item.EnableTag(ContainerHelper.CONTAINER_TAG);
+            return inventories;
+        }
+
+        public void ContainerOpenSound(string soundId)
+        {
+            if (this is not ProbablyHelpfulItem itemHelper) return;
+            GameItem item = itemHelper.GameItem;
             item.soundContainerOpen = soundId;
         }
 
-        public static void ContainerCloseSound<T>(this T containerItem, GameItem item, string soundId)
-            where T : ProbablyHelpfulItem, IProbablyHelpfulContainer
+        public void ContainerCloseSound(string soundId)
         {
+            if (this is not ProbablyHelpfulItem itemHelper) return;
+            GameItem item = itemHelper.GameItem;
             item.soundContainerClose = soundId;
         }
 
-        public static void SetAsPouch<T>(this T containerItem, GameItem item)
-            where T : ProbablyHelpfulItem, IProbablyHelpfulContainer
+        public void SetAsPouch()
         {
-            containerItem.Tag.Add(ContainerHelper.POUCH_TAG);
+            if (this is not ProbablyHelpfulItem itemHelper) return;
+            itemHelper.Tag.Add(ContainerHelper.POUCH_TAG);
         }
 
-        public static void SetAsBackpack<T>(this T containerItem, GameItem item)
-            where T : ProbablyHelpfulItem, IProbablyHelpfulContainer
+        public void SetAsBackpack()
         {
-            containerItem.Tag.Add(ContainerHelper.BACKPACK_TAG);
+            if (this is not ProbablyHelpfulItem itemHelper) return;
+            itemHelper.Tag.Add(ContainerHelper.BACKPACK_TAG);
         }
 
-        public static void StorableInBackpack<T>(this T containerItem, GameItem item)
-            where T : ProbablyHelpfulItem, IProbablyHelpfulContainer
+        public void StorableInBackpack()
         {
-            containerItem.StorableInContainers(item);
-            containerItem.Tag.Add(ContainerHelper.NESTABLE_DEVICE_TAG);
+            if (this is not ProbablyHelpfulItem itemHelper) return;
+            GameItem item = itemHelper.GameItem;
+            StorableInContainers();
+            itemHelper.Tag.Add(ContainerHelper.NESTABLE_DEVICE_TAG);
         }
 
-        public static void SetAsPrecontainer<T>(this T containerItem, GameItem item)
+        public void SetAsPrecontainer()
         {
+            if (this is not ProbablyHelpfulItem itemHelper) return;
+            GameItem item = itemHelper.GameItem;
             item.DisableTag(ContainerHelper.CONTAINER_TAG);
             item.EnableTag(ContainerHelper.PRE_CONTAINER_TAG);
 
         }
 
-        public static void StorableInContainers<T>(this T containerItem, GameItem item)
-            where T : ProbablyHelpfulItem, IProbablyHelpfulContainer
+        public void StorableInContainers()
         {
-            containerItem.Tag.Add(ContainerHelper.STORABLE_PACKAGE_TAG);
+            if (this is not ProbablyHelpfulItem itemHelper) return;
+            itemHelper.Tag.Add(ContainerHelper.STORABLE_PACKAGE_TAG);
         }
 
-        public static void ContainerAllowedItems<T>(this T containerItem, params string[] ids)
-            where T : ProbablyHelpfulItem, IProbablyHelpfulContainer
+        public void ContainerAllowedItems(params string[] ids)
         {
-            containerItem.AllowedIds.AddRange(ids);
+            AllowedIds.AddRange(ids);
         }
 
-        public static void ContainerAllowedTags<T>(this T containerItem, params string[] ids)
-            where T : ProbablyHelpfulItem, IProbablyHelpfulContainer
+        public void ContainerAllowedTags(params string[] ids)
         {
-            containerItem.AllowedTags.AddRange(ids);
+            AllowedTags.AddRange(ids);
         }
 
-        public static void ModifySpriteFromInventory<T>(this T containerItem, GameItem item, Func<GameInventory, List<ItemSpriteModifier>> modifierFunc)
-            where T : ProbablyHelpfulItem, IProbablyHelpfulContainer
+        public void ModifySpriteFromInventory(Func<GameInventory, List<ItemSpriteModifier>> modifierFunc)
         {
+            if (this is not ProbablyHelpfulItem itemHelper) return;
+            GameItem item = itemHelper.GameItem;
             GameInventory inventory = GraphUtils.FindChildType<GameInventory>(item);
             if (inventory == null)
             {
                 UnityEngine.Debug.LogWarning("[ProbablyHelpful] ModifySpriteFromInventory on '" + item.identifier + "': no inventory found. Call it after SetContainer.");
                 return;
             }
-            containerItem.ModifySpriteFromInventory(item, inventory, modifierFunc);
+            ModifySpriteFromInventory(inventory, modifierFunc);
         }
 
-        public static void ModifySpriteFromInventory<T>(this T containerItem, GameItem item, GameInventory inventory, Func<GameInventory, List<ItemSpriteModifier>> modifierFunc)
-            where T : ProbablyHelpfulItem, IProbablyHelpfulContainer
+        public void ModifySpriteFromInventory(GameInventory inventory, Func<GameInventory, List<ItemSpriteModifier>> modifierFunc)
         {
+            if (this is not ProbablyHelpfulItem itemHelper) return;
+            GameItem item = itemHelper.GameItem;
             Func<GameItem, List<ItemSpriteModifier>> previous = item.getItemSpriteModifierForItemFunc;
             item.getItemSpriteModifierForItemFunc = self =>
             {
@@ -144,15 +200,6 @@ namespace ProbablyHelpful
             Action<GameItem, GameInventory, SlotMarker> refresh = (_, _, _) => item.Validate();
             inventory.onSlotAddItemEndFunc += refresh;
             inventory.onSlotRemoveItemEndFunc += refresh;
-        }
-
-        public static void ModifySpriteFromInventories<T>(this T containerItem, GameItem item, Func<GameInventory, List<ItemSpriteModifier>> modifierFunc, params GameInventory[] inventories)
-            where T : ProbablyHelpfulItem, IProbablyHelpfulContainer
-        {
-            foreach (var inventory in inventories)
-            {
-                containerItem.ModifySpriteFromInventory(item, inventory, modifierFunc);
-            }
         }
     }
 }

@@ -3,7 +3,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
-using System.Reflection;
 
 namespace ProbablyHelpful
 {
@@ -42,19 +41,40 @@ namespace ProbablyHelpful
             var sprites = new List<Sprite>();
             foreach (var item in items)
             {
-                var sprite = CustomUIManager.Instance.GetModSprite(modId, prefix + item.identifier);
+                var sprite = CustomUIManager.Instance.GetModSprite(modId, prefix + item.identifier, true);
                 if (sprite != null) sprites.Add(sprite);
             }
             return sprites;
         }
-        public static bool MoveItemTo(GameItem item, GameInventory inventory)
+        public static bool MoveItemTo(GameItem item, GameItem target)
         {
-            SlotMarker slotMarker = inventory.TryFindOneValidInventorySlot(item);
-            if (slotMarker == null || !slotMarker.IsValid() || slotMarker.AcceptUnchecked() < 1) return false;
-            inventory.TryInventorySlot(item, slotMarker.itemGridShape);
-            if (inventory.TryInventorySlot(item, slotMarker.itemGridShape) != null) return true;
-            return false;
+            GameInventory inventory = GraphUtils.FindChildType<GameInventory>(target);
+            return MoveItemTo(item, inventory);
         }
+	    public static bool MoveItemTo(GameItem item, GameInventory inventory)
+	    {
+	        if (item == null || inventory == null)
+	        {
+	            return false;
+	        }
+	        SlotMarker slotMarker = inventory.TryFindOneValidInventorySlot(item);
+	        if (slotMarker == null)
+	        {
+	            ProbablyHelpful.Logger.Warning($"MoveItemTo: no valid slot for '{item.identifier}' in inventory '{inventory.identifier}'.");
+	            return false;
+	        }
+
+	        if (!slotMarker.IsValid())
+	        {
+	            ProbablyHelpful.Logger.Warning($"MoveItemTo: invalid slot for '{item.identifier}' in inventory '{inventory.identifier}'.");
+	            return false;
+	        }
+
+	        // Use the same placement path as GraphUtils so we don't depend on grid-shape APIs.
+	        GraphUtils.TryAcceptAll(inventory, item);
+	        bool placed = item.parentInventory == inventory;
+	        return placed;
+	    }
 
         public static void MoveContents(GameInventory source, GameInventory destination)
         {
@@ -139,6 +159,24 @@ namespace ProbablyHelpful
             if (MoveItemTo(item, inventory)) return true;
             item.Destroy();
             return false;
+        }
+
+        public static int AddSellContainer<T>(List<GameItem> validItems) where T : ProbablyHelpfulItem
+        {
+            ProbablyHelpfulItem itemHelper = ItemCollection.GetItem<T>();
+            GameItem container = ModHelper.SpawnItem(itemHelper.ItemId);
+            int total = 0;
+            foreach (var item in validItems)
+            {
+                ModHelper.SetItemOwnerShip(item, true);
+                var slot = container.TryFindOneValidInventorySlot(item);
+                total += slot?.TryAcceptOnce() ?? 0;
+                ModHelper.SetItemOwnerShip(item, false);
+            }
+            ModHelper.SetItemOwnerShip(container, false);
+            ModHelper.MoveItemToBackCounter(container);
+            ModHelper.MoveItemToFrontCounter(container);
+            return total;
         }
     }
 }
