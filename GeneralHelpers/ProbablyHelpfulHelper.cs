@@ -161,7 +161,8 @@ namespace ProbablyHelpful
             return false;
         }
 
-        public static int AddSellContainer<T>(List<GameItem> validItems) where T : ProbablyHelpfulItem
+        public static int AddSellContainer<T>(List<GameItem> validItems) 
+            where T : ProbablyHelpfulItem, IProbablyHelpfulContainer
         {
             ProbablyHelpfulItem itemHelper = ItemCollection.GetItem<T>();
             GameItem container = ModHelper.SpawnItem(itemHelper.ItemId);
@@ -170,8 +171,14 @@ namespace ProbablyHelpful
             {
                 ModHelper.SetItemOwnerShip(item, true);
                 var slot = container.TryFindOneValidInventorySlot(item);
-                total += slot?.TryAcceptOnce() ?? 0;
-                ModHelper.SetItemOwnerShip(item, false);
+                var n = slot?.TryAcceptOnce() ?? 0;
+                if (n == 0)
+                {
+                    // Item not accepted into the container
+                    ModHelper.SetItemOwnerShip(item, false);
+                    continue;
+                }
+                total += n;
             }
             ModHelper.SetItemOwnerShip(container, false);
             ModHelper.MoveItemToBackCounter(container);
